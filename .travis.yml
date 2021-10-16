@@ -1,0 +1,20 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t sumugan13/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true sumugan13/react-test npm test
+
+after_success:
+  - docker build -t sumugan13/multi-client ./client
+  - docker build -t sumugan13/multi-nginx ./nginx
+  - docker build -t sumugan13/multi-server ./server
+  - docker build -t sumugan13/multi-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push sumugan13/multi-client
+  - docker push sumugan13/multi-nginx
+  - docker push sumugan13/multi-server
+  - docker push sumugan13/multi-worker
